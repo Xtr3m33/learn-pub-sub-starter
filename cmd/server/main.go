@@ -8,6 +8,8 @@ import (
 
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/gamelogic"
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/messageutils"
+	"github.com/bootdotdev/learn-pub-sub-starter/internal/pubsub"
+	"github.com/bootdotdev/learn-pub-sub-starter/internal/routing"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -27,6 +29,17 @@ func main() {
 	msgChannel, err := connection.Channel()
 	if err != nil {
 		log.Fatalf("error opening channel for rabbitmq server: %v", err)
+	}
+
+	_, _, err = pubsub.DeclareAndBind(
+		connection,
+		routing.ExchangePerilTopic,
+		routing.GameLogSlug,
+		fmt.Sprintf("%s.*", routing.GameLogSlug),
+		pubsub.Durable,
+	)
+	if err != nil {
+		log.Fatalf("error declaring game log queue: %v", err)
 	}
 
 	gamelogic.PrintServerHelp()
