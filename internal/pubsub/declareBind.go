@@ -3,6 +3,7 @@ package pubsub
 import (
 	"fmt"
 
+	"github.com/bootdotdev/learn-pub-sub-starter/internal/routing"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -36,7 +37,9 @@ func DeclareAndBind(
 		paramAutodelete,
 		paramExclusive,
 		false,
-		nil,
+		amqp.Table{
+			"x-dead-letter-exchange": routing.ExchangePerilDeadLetter,
+		},
 	)
 	if err != nil {
 		return nil, amqp.Queue{}, fmt.Errorf("error declaring queue: %v", err)
