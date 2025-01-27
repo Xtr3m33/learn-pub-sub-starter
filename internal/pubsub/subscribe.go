@@ -77,6 +77,8 @@ func subscribe[T any](
 		return fmt.Errorf("error declaring and binding queue: %v", err)
 	}
 
+	declaredCh.Qos(10, 0, false)
+
 	deliveryCh, err := declaredCh.Consume(queue.Name, "", false, false, false, false, nil)
 	if err != nil {
 		return fmt.Errorf("error consuming messages: %v", err)
