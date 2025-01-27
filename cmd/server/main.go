@@ -31,12 +31,13 @@ func main() {
 		log.Fatalf("error opening channel for rabbitmq server: %v", err)
 	}
 
-	_, _, err = pubsub.DeclareAndBind(
+	err = pubsub.SubscribeGob(
 		connection,
 		routing.ExchangePerilTopic,
 		routing.GameLogSlug,
 		fmt.Sprintf("%s.*", routing.GameLogSlug),
 		pubsub.SimpleQueueDurable,
+		handlerLogs(),
 	)
 	if err != nil {
 		log.Fatalf("error declaring game log queue: %v", err)
