@@ -6,13 +6,6 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type SimpleQueueType = int
-
-const (
-	Durable SimpleQueueType = iota
-	Transient
-)
-
 func DeclareAndBind(
 	conn *amqp.Connection,
 	exchange,
@@ -30,9 +23,9 @@ func DeclareAndBind(
 	paramAutodelete := false
 	paramExclusive := false
 	switch simpleQueueType {
-	case Durable:
+	case SimpleQueueDurable:
 		paramDurable = true
-	case Transient:
+	case SimpleQueueTransient:
 		paramAutodelete = true
 		paramExclusive = true
 	}

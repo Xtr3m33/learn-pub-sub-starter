@@ -36,7 +36,7 @@ func main() {
 		routing.ExchangePerilDirect,
 		fmt.Sprintf("%s.%s", routing.PauseKey, username),
 		routing.PauseKey,
-		pubsub.Transient,
+		pubsub.SimpleQueueTransient,
 	)
 	if err != nil {
 		log.Fatalf("error declaring queue: %v", err)
@@ -49,7 +49,7 @@ func main() {
 		routing.ExchangePerilDirect,
 		fmt.Sprintf("%s.%s", routing.PauseKey, gs.GetUsername()),
 		routing.PauseKey,
-		pubsub.Transient,
+		pubsub.SimpleQueueTransient,
 		handlerPause(gs),
 	)
 	if err != nil {
@@ -61,7 +61,7 @@ func main() {
 		routing.ExchangePerilTopic,
 		fmt.Sprintf("%s.%s", routing.ArmyMovesPrefix, gs.GetUsername()),
 		fmt.Sprintf("%s.*", routing.ArmyMovesPrefix),
-		pubsub.Transient,
+		pubsub.SimpleQueueTransient,
 		handlerMove(gs),
 	)
 	if err != nil {
