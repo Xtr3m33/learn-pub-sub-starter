@@ -31,7 +31,7 @@ func main() {
 		log.Fatalf("error getting username: %v", err)
 	}
 
-	_, _, err = pubsub.DeclareAndBind(
+	ch, _, err := pubsub.DeclareAndBind(
 		connection,
 		routing.ExchangePerilDirect,
 		fmt.Sprintf("%s.%s", routing.PauseKey, username),
@@ -47,13 +47,25 @@ func main() {
 	err = pubsub.SubscribeJSON(
 		connection,
 		routing.ExchangePerilDirect,
-		routing.PauseKey+"."+gs.GetUsername(),
+		fmt.Sprintf("%s.%s", routing.PauseKey, gs.GetUsername()),
 		routing.PauseKey,
 		pubsub.Transient,
 		handlerPause(gs),
 	)
 	if err != nil {
 		log.Fatalf("could not subscribe to pause: %v", err)
+	}
+
+	err = pubsub.SubscribeJSON(
+		connection,
+		routing.ExchangePerilTopic,
+		fmt.Sprintf("%s.%s", routing.ArmyMovesPrefix, gs.GetUsername()),
+		fmt.Sprintf("%s.*", routing.ArmyMovesPrefix),
+		pubsub.Transient,
+		handlerMove(gs),
+	)
+	if err != nil {
+		log.Fatalf("could not subscribe to move: %v", err)
 	}
 
 	for {
@@ -69,9 +81,20 @@ func main() {
 				fmt.Println(err)
 			}
 		case "move":
-			_, err := gs.CommandMove(input)
+			mv, err := gs.CommandMove(input)
 			if err != nil {
-				fmt.Println(err)
+				log.Printf("error moving: %v", err)
+			}
+			err = pubsub.PublishJSON(
+				ch,
+				routing.ExchangePerilTopic,
+				fmt.Sprintf("%s.%s", routing.ArmyMovesPrefix, gs.GetUsername()),
+				mv,
+			)
+			if err != nil {
+				log.Printf("error publishing move: %v", err)
+			} else {
+				log.Print("moved successfully")
 			}
 		case "status":
 			gs.CommandStatus()
